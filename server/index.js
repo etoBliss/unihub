@@ -32,6 +32,10 @@ app.get('/', (req, res) => {
 });
 
 // Fire up Server Instance
-app.listen(PORT, () => {
-  console.log(`Server executing seamlessly on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Server executing seamlessly on port ${PORT}`);
+  });
+}
+
+export default app;

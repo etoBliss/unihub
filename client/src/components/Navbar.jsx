@@ -6,7 +6,7 @@ const Navbar = () => {
     const { user } = useContext(AuthContext);
 
     return (
-        <header className="fixed top-4 right-8 left-[292px] h-16 bg-white rounded-xl diffuse-shadow z-40 flex justify-between items-center px-8 border border-surface-container-high">
+        <header className="fixed top-4 right-8 left-[292px] h-16 bg-white rounded-xl diffuse-shadow z-40 md:flex hidden justify-between items-center px-8 border border-surface-container-high">
             {/* Search */}
             <div className="flex items-center gap-3 flex-1">
                 <Search className="w-4 h-4 text-on-surface-variant opacity-60" />

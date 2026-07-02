@@ -27,7 +27,7 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="fixed left-0 top-0 h-full w-[260px] bg-primary flex flex-col z-50">
+        <aside className="fixed left-0 top-0 h-full w-[260px] bg-primary md:flex hidden flex-col z-50">
             {/* Brand Header */}
             <div className="px-6 py-8">
                 <div className="flex items-center gap-3">
@@ -51,8 +51,8 @@ const Sidebar = () => {
                                 <Link
                                     to={path}
                                     className={`flex items-center gap-3 py-3 pr-4 transition-all duration-200 text-sm ${isActive
-                                            ? 'text-white font-semibold bg-white/10 border-l-[3px] border-secondary pl-4'
-                                            : 'text-white/70 font-normal hover:text-white hover:bg-white/5 pl-[19px] hover:translate-x-1'
+                                        ? 'text-white font-semibold bg-white/10 border-l-[3px] border-secondary pl-4'
+                                        : 'text-white/70 font-normal hover:text-white hover:bg-white/5 pl-[19px] hover:translate-x-1'
                                         }`}
                                 >
                                     <Icon className={`w-5 h-5 ${isActive ? 'text-secondary' : ''}`} />

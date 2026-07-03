@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Navbar from '../components/Navbar';
@@ -16,6 +16,7 @@ const MainLayout = () => {
     const { user } = useContext(AuthContext);
     const { pathname } = useLocation();
     const navigate = useNavigate();
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     const bottomLinks = [
         { path: '/portal', label: 'Dash', icon: LayoutDashboard },
@@ -27,12 +28,13 @@ const MainLayout = () => {
 
     return (
         <div className="flex min-h-screen bg-[#F9F9F9] font-body-md text-on-surface">
-            {/* Desktop: Fixed sidebar */}
-            <Sidebar />
+            {/* Desktop: Fixed sidebar with collapse state */}
+            <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
-            <div className="flex-1 flex flex-col min-w-0">
+            {/* Content Area wrapper: transitions width padding offset based on sidebar state */}
+            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${isCollapsed ? 'md:pl-[70px]' : 'md:pl-[260px]'}`}>
                 {/* Desktop: Floating top navbar */}
-                <Navbar />
+                <Navbar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
 
                 {/* Mobile: Top AppBar */}
                 <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md px-4 h-16 flex items-center justify-between border-b border-surface-container-high md:hidden">
@@ -64,7 +66,7 @@ const MainLayout = () => {
                 </header>
 
                 {/* Page Content: Responsive spacing and margins */}
-                <main className="flex-1 flex flex-col md:ml-[260px] min-w-0 md:pt-32 pt-20 pb-24 md:pb-12 px-4 md:px-8 max-w-7xl mx-auto w-full">
+                <main className="flex-1 flex flex-col md:pt-32 pt-20 pb-24 md:pb-12 px-4 md:px-8 max-w-7xl mx-auto w-full">
                     <Outlet />
                 </main>
 

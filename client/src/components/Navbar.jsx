@@ -1,14 +1,26 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { Search, Bell, HelpCircle } from 'lucide-react';
+import { Search, Bell, HelpCircle, Menu, ChevronLeft } from 'lucide-react';
 
-const Navbar = () => {
+const Navbar = ({ isCollapsed, setIsCollapsed }) => {
     const { user } = useContext(AuthContext);
 
     return (
-        <header className="fixed top-4 right-8 left-[292px] h-16 bg-white rounded-xl diffuse-shadow z-40 md:flex hidden justify-between items-center px-8 border border-surface-container-high">
-            {/* Search */}
+        <header className={`fixed top-4 right-8 h-16 bg-white rounded-xl diffuse-shadow z-40 md:flex hidden justify-between items-center px-8 border border-surface-container-high transition-all duration-300 ${isCollapsed ? 'left-[102px]' : 'left-[292px]'
+            }`}>
+            {/* Collapse toggle and Search */}
             <div className="flex items-center gap-3 flex-1">
+                <button
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-surface-container text-on-surface-variant transition-colors shrink-0 mr-2"
+                    title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+                >
+                    {isCollapsed ? (
+                        <Menu className="w-5 h-5" />
+                    ) : (
+                        <ChevronLeft className="w-5 h-5" />
+                    )}
+                </button>
                 <Search className="w-4 h-4 text-on-surface-variant opacity-60" />
                 <input
                     className="bg-transparent border-none focus:ring-0 outline-none text-sm w-64 text-on-surface placeholder:text-outline/50"

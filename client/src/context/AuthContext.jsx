@@ -64,9 +64,9 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const registerUser = async (name, email, password, matricNumber, department, level) => {
+    const registerUser = async (name, email, password, matricNumber, faculty, department, level) => {
         try {
-            const res = await api.post('/auth/register', { name, email, password, matricNumber, department, level });
+            const res = await api.post('/auth/register', { name, email, password, matricNumber, faculty, department, level });
             const { token, ...userData } = res.data;
 
             localStorage.setItem('unihub_token', token);

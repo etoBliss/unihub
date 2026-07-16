@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes.js';
 import announcementRoutes from './routes/announcementRoutes.js';
 import resourceRoutes from './routes/resourceRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
+import facultyRoutes from './routes/facultyRoutes.js';
 
 // Initialize environment variables
 dotenv.config();
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/resources', resourceRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/faculties', facultyRoutes);
 
 // Base Test Route
 app.get('/', (req, res) => {

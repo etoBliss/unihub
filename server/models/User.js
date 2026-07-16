@@ -13,21 +13,26 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
-    // Validate institutional email: must end with @lautech.edu.ng
+    // Validate institutional student email: must match example@student.lautech.edu.ng
     match: [
-      /@lautech\.edu\.ng$/,
-      'Please use a valid LAUTECH institutional email address (ending with @lautech.edu.ng)'
+      /^[a-zA-Z0-9._%+-]+@student\.lautech\.edu\.ng$/,
+      'Please use your official student email (e.g. username@student.lautech.edu.ng)'
     ],
   },
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters'],
+    minlength: [8, 'Password must be at least 8 characters'],
   },
   matricNumber: {
     type: String,
     required: [true, 'Matriculation number is required'],
     unique: true,
+    trim: true,
+  },
+  faculty: {
+    type: String,
+    required: [true, 'Faculty is required'],
     trim: true,
   },
   department: {

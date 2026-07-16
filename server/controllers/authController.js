@@ -9,11 +9,11 @@ const generateToken = (id) => {
 };
 
 export const registerUser = async (req, res) => {
-  const { name, email, password, matricNumber, department, level } = req.body;
+  const { name, email, password, matricNumber, faculty, department, level } = req.body;
 
   try {
-    if (!matricNumber || !department || !level) {
-      return res.status(400).json({ message: 'Matriculation number, Department, and Level are required fields' });
+    if (!matricNumber || !faculty || !department || !level) {
+      return res.status(400).json({ message: 'Matriculation number, Faculty, Department, and Level are required fields' });
     }
 
     const emailExists = await User.findOne({ email });
@@ -31,9 +31,10 @@ export const registerUser = async (req, res) => {
       email,
       password,
       matricNumber,
+      faculty,
       department,
       level,
-      role: 'student', // Strictly hardcoded to student
+      role: 'student',
     });
 
     if (user) {
@@ -42,6 +43,7 @@ export const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         matricNumber: user.matricNumber,
+        faculty: user.faculty,
         department: user.department,
         level: user.level,
         role: user.role,

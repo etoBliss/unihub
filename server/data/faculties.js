@@ -65,13 +65,11 @@ export const FACULTIES = [
   },
   {
     id: 'fcoms',
-    name: 'Faculty of Communication and Information Sciences',
+    name: 'Faculty of Computing and Informatics',
     departments: [
       'Computer Science',
       'Information and Communication Technology',
       'Library and Information Science',
-      'Mass Communication',
-      'Telecommunication Science',
     ],
   },
   {

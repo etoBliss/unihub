@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext, api } from '../context/AuthContext';
 import {
     School, Mail, Lock, User, BadgeCheck, Bookmark, Award, HelpCircle,
-    Eye, EyeOff, ChevronDown, GraduationCap
+    Eye, EyeOff, ChevronDown, GraduationCap, Search, Check
 } from 'lucide-react';
 
 // ─── Password strength rules ───────────────────────────────────────────────
@@ -43,27 +43,32 @@ const Login = () => {
     const [errorMsg, setErrorMsg] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    // Password visibility
+    // Password visibility states
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
 
-    // Password rule feedback
+    // Live validation states
     const [pwdRules, setPwdRules] = useState(validatePassword(''));
     const [emailState, setEmailState] = useState({ valid: false, msg: '' });
     const [confirmMsg, setConfirmMsg] = useState('');
 
-    // Faculty / department data
+    // Custom dropdown states
+    const [openDropdown, setOpenDropdown] = useState(null); // 'faculty' | 'department' | 'level' | null
+    const [facultySearch, setFacultySearch] = useState('');
+    const [deptSearch, setDeptSearch] = useState('');
+
+    // Faculty & department lists fetched from server
     const [faculties, setFaculties] = useState([]);
     const [departments, setDepartments] = useState([]);
 
     const cardRef = useRef(null);
 
-    // Redirect if already logged in
+    // Redirect user if logged in already
     useEffect(() => {
         if (user) navigate('/portal');
     }, [user, navigate]);
 
-    // Fetch faculties from the server API
+    // Retrieve faculties on component mounting
     useEffect(() => {
         api.get('/faculties')
             .then((res) => setFaculties(res.data))
@@ -74,23 +79,16 @@ const Login = () => {
         const { name, value } = e.target;
         const updated = { ...formData, [name]: value };
 
-        // When faculty changes, reset department and load departments for that faculty
-        if (name === 'faculty') {
-            updated.department = '';
-            const chosen = faculties.find((f) => f.name === value);
-            setDepartments(chosen ? chosen.departments : []);
-        }
-
         setFormData(updated);
         if (errorMsg) setErrorMsg('');
 
-        // Live email feedback
+        // Email live validation check
         if (name === 'email') setEmailState(validateEmail(value));
 
-        // Live password strength feedback
+        // Password live checks
         if (name === 'password') setPwdRules(validatePassword(value));
 
-        // Live confirm password feedback
+        // Confirm Password matcher
         if (name === 'confirmPassword') {
             setConfirmMsg(value === updated.password ? '✓ Passwords match' : 'Passwords do not match');
         }
@@ -99,6 +97,21 @@ const Login = () => {
                 ? (formData.confirmPassword === value ? '✓ Passwords match' : 'Passwords do not match')
                 : '');
         }
+    };
+
+    // Custom Dropdown click handler that resets appropriate fields
+    const handleChangeCustom = (name, value) => {
+        const updated = { ...formData, [name]: value };
+
+        if (name === 'faculty') {
+            updated.department = '';
+            const chosen = faculties.find((f) => f.name === value);
+            setDepartments(chosen ? chosen.departments : []);
+            setDeptSearch(''); // reset search
+        }
+
+        setFormData(updated);
+        if (errorMsg) setErrorMsg('');
     };
 
     const handleSubmit = async (e) => {
@@ -150,7 +163,38 @@ const Login = () => {
         setIsLoading(false);
     };
 
-    // Subtle card tilt effect
+    // Resets registry form states clean when user toggles tab
+    const handleToggleForm = () => {
+        setIsRegister(!isRegister);
+        setErrorMsg('');
+        setOpenDropdown(null);
+        setFacultySearch('');
+        setDeptSearch('');
+        setFormData({
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            matricNumber: '',
+            faculty: '',
+            department: '',
+            level: '100',
+        });
+        setEmailState({ valid: false, msg: '' });
+        setPwdRules(validatePassword(''));
+        setConfirmMsg('');
+    };
+
+    // Filtered lists for selectable options
+    const filteredFaculties = faculties.filter((f) =>
+        f.name.toLowerCase().includes(facultySearch.toLowerCase())
+    );
+
+    const filteredDepartments = departments.filter((d) =>
+        d.toLowerCase().includes(deptSearch.toLowerCase())
+    );
+
+    // Subtle 3D tilt effect on the signup/login card container
     const handleMouseMove = (e) => {
         if (!cardRef.current) return;
         const rect = cardRef.current.getBoundingClientRect();
@@ -175,8 +219,16 @@ const Login = () => {
     const strengthColor = formData.password ? strengthColors[Math.min(passwordStrengthCount - 1, 3)] : 'bg-surface-container';
 
     return (
-        <main className="min-h-screen w-full flex flex-col md:flex-row bg-[#f2f2f2] text-on-surface">
-            {/* Left Panel: Brand */}
+        <main className="min-h-screen w-full flex flex-col md:flex-row bg-[#f2f2f2] text-on-surface relative">
+            {/* Backdrop click overlay to auto-collapse search lists */}
+            {openDropdown && (
+                <div
+                    className="fixed inset-0 z-40 cursor-default"
+                    onClick={() => setOpenDropdown(null)}
+                />
+            )}
+
+            {/* Left Panel: Brand identity */}
             <section className="w-full md:w-1/2 bg-primary-container flex flex-col justify-center items-start px-12 md:px-24 py-16 text-white relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
                     <div className="w-full h-full bg-cover bg-center" style={{ backgroundImage: `url('https://lh3.googleusercontent.com/aida-public/AB6AXuA1pedNfKEbJV5YsaI5oI5jmvd5xk6pIVq-tXxATgNXuqZhA8ZMtM50R8mSAbCEWliwmsq1ug4y6LJYKpVZBiB3E2_KPpFhSDKuTuTABMxWJadysZpsLiRO1686SKei9lr8MES0JrzUEUfcp1uKQjknwgS22MvLYKas9GeKAoiCY6R8GhntN9idoz1f_54iiPXZCQl-FCeGmeJ_JFBPEgYA447hXvIUPN4gX9OtXDdh7aWyhRDhlWwe2n0PdYy5QMmf5N_fdiwgmg')` }} />
@@ -210,13 +262,13 @@ const Login = () => {
                 </div>
             </section>
 
-            {/* Right Panel: Form */}
+            {/* Right Panel: Interactive credentials container */}
             <section className="w-full md:w-1/2 flex items-center justify-center px-6 md:px-12 py-16 overflow-y-auto">
                 <div
                     ref={cardRef}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
-                    className="w-full max-w-md bg-white rounded-xl p-8 md:p-12 diffuse-shadow transform transition-all duration-300"
+                    className="w-full max-w-md bg-white rounded-xl p-8 md:p-12 diffuse-shadow transform transition-all duration-300 relative z-30"
                 >
                     <header className="mb-8 text-center md:text-left">
                         <h2 className="font-headline-xl text-headline-xl text-primary mb-2 font-bold text-2xl md:text-3xl">
@@ -236,7 +288,7 @@ const Login = () => {
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Full Name */}
+                        {/* Name */}
                         {isRegister && (
                             <div className="text-left">
                                 <label className={labelClass} htmlFor="name">Full Name</label>
@@ -251,7 +303,7 @@ const Login = () => {
 
                         {/* Email */}
                         <div className="text-left">
-                            <label className={labelClass} htmlFor="email">Institutional Email</label>
+                            <label className={labelClass} htmlFor="email">Institutional Student Email</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
                                     <Mail className="text-outline w-5 h-5 opacity-55" />
@@ -265,7 +317,7 @@ const Login = () => {
                                 />
                             </div>
                             {formData.email && (
-                                <p className={`text-xs mt-1.5 ml-1 font-medium ${emailState.valid ? 'text-green-600' : 'text-red-500'}`}>
+                                <p className={`text-xs mt-1.5 ml-1 font-medium transition-all ${emailState.valid ? 'text-green-600' : 'text-red-500'}`}>
                                     {emailState.msg}
                                 </p>
                             )}
@@ -285,37 +337,34 @@ const Login = () => {
                                     placeholder="••••••••••••"
                                     type={showPassword ? 'text' : 'password'}
                                 />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-4 flex items-center text-outline/60 hover:text-primary transition-colors">
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-4 flex items-center text-outline/65 hover:text-primary transition-colors">
                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                 </button>
                             </div>
-                            {/* Strength bar + rules — register only */}
+                            {/* Strength level meter & checklist criteria */}
                             {isRegister && formData.password && (
-                                <div className="mt-2 ml-1 space-y-2">
-                                    {/* Strength bar */}
-                                    <div className="flex gap-1">
+                                <div className="mt-2.5 ml-1 space-y-2">
+                                    <div className="flex gap-1.5 h-1">
                                         {[0, 1, 2, 3].map((i) => (
-                                            <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i < passwordStrengthCount ? strengthColor : 'bg-surface-container-high'}`} />
+                                            <div key={i} className={`h-full flex-1 rounded-full transition-all duration-300 ${i < passwordStrengthCount ? strengthColor : 'bg-surface-container-high'}`} />
                                         ))}
                                     </div>
-                                    {/* Per-rule badges */}
-                                    <div className="space-y-1">
+                                    <div className="space-y-1 mt-2">
                                         {pwdRules.map((rule) => (
-                                            <p key={rule.id} className={`text-[11px] flex items-center gap-1.5 font-medium ${rule.passed ? 'text-green-600' : 'text-on-surface-variant'}`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full inline-block ${rule.passed ? 'bg-green-500' : 'bg-outline/30'}`}></span>
+                                            <p key={rule.id} className={`text-[11px] flex items-center gap-1.5 font-medium transition-colors ${rule.passed ? 'text-green-600' : 'text-on-surface-variant/80'}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full inline-block transition-all ${rule.passed ? 'bg-green-500' : 'bg-outline/30'}`}></span>
                                                 {rule.label}
                                             </p>
                                         ))}
                                     </div>
                                 </div>
                             )}
-                            {/* Login only — just check the length hint */}
                             {!isRegister && formData.password && formData.password.length < 8 && (
                                 <p className="text-xs mt-1.5 ml-1 font-medium text-red-500">Password must be at least 8 characters</p>
                             )}
                         </div>
 
-                        {/* Confirm Password — register only */}
+                        {/* Confirm Password */}
                         {isRegister && (
                             <div className="text-left">
                                 <label className={labelClass} htmlFor="confirmPassword">Confirm Password</label>
@@ -327,25 +376,25 @@ const Login = () => {
                                         className={inputClass + ' pr-12'}
                                         id="confirmPassword" name="confirmPassword" required
                                         value={formData.confirmPassword} onChange={handleChange}
-                                        placeholder="Re-enter password"
+                                        placeholder="Confirm Access Key"
                                         type={showConfirm ? 'text' : 'password'}
                                     />
-                                    <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute inset-y-0 right-4 flex items-center text-outline/60 hover:text-primary transition-colors">
+                                    <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute inset-y-0 right-4 flex items-center text-outline/65 hover:text-primary transition-colors">
                                         {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
                                 </div>
                                 {formData.confirmPassword && (
-                                    <p className={`text-xs mt-1.5 ml-1 font-medium ${confirmMsg.startsWith('✓') ? 'text-green-600' : 'text-red-500'}`}>
+                                    <p className={`text-xs mt-1.5 ml-1 font-medium transition-all ${confirmMsg.startsWith('✓') ? 'text-green-600' : 'text-red-500'}`}>
                                         {confirmMsg}
                                     </p>
                                 )}
                             </div>
                         )}
 
-                        {/* Register-only additional fields */}
+                        {/* Register extra fields */}
                         {isRegister && (
                             <>
-                                {/* Matriculation Number */}
+                                {/* Matriculation ID */}
                                 <div className="text-left">
                                     <label className={labelClass} htmlFor="matricNumber">Matriculation Number</label>
                                     <div className="relative">
@@ -356,91 +405,183 @@ const Login = () => {
                                     </div>
                                 </div>
 
-                                {/* Faculty Selector */}
-                                <div className="text-left">
-                                    <label className={labelClass} htmlFor="faculty">Faculty</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                            <GraduationCap className="text-outline w-5 h-5 opacity-55" />
-                                        </div>
-                                        <select
-                                            className={inputClass + ' appearance-none pr-10'}
-                                            id="faculty" name="faculty"
-                                            required
-                                            value={formData.faculty}
-                                            onChange={handleChange}
+                                {/* Custom Faculty Selector Dropdown */}
+                                <div className="text-left relative">
+                                    <label className={labelClass}>Faculty</label>
+                                    <div className="relative z-50">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setOpenDropdown(openDropdown === 'faculty' ? null : 'faculty');
+                                                setFacultySearch('');
+                                            }}
+                                            className={`${inputClass} flex items-center justify-between text-left focus:ring-2 focus:ring-secondary/50`}
                                         >
-                                            <option value="">-- Select Faculty --</option>
-                                            {faculties.map((f) => (
-                                                <option key={f.id} value={f.name}>{f.name}</option>
-                                            ))}
-                                        </select>
-                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                                            <ChevronDown className="text-outline w-4 h-4 opacity-55" />
-                                        </div>
+                                            <span className={`truncate mr-4 ${formData.faculty ? "text-on-surface font-medium" : "text-outline/50"}`}>
+                                                {formData.faculty || "-- Select Faculty --"}
+                                            </span>
+                                            <ChevronDown className={`text-outline w-4 h-4 opacity-55 shrink-0 transition-transform duration-200 ${openDropdown === 'faculty' ? 'rotate-180' : ''}`} />
+                                            <GraduationCap className="text-outline w-5 h-5 opacity-55 absolute left-4 pointer-events-none" />
+                                        </button>
+
+                                        {openDropdown === 'faculty' && (
+                                            <div className="absolute left-0 right-0 mt-1 bg-white border border-surface-container-high rounded-lg shadow-xl py-2 max-h-64 flex flex-col z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                                                {/* Search header inside dropdown */}
+                                                <div className="px-3 pb-2 border-b border-surface-container mb-1 shrink-0 flex items-center gap-2">
+                                                    <Search className="w-3.5 h-3.5 text-outline/55" />
+                                                    <input
+                                                        type="text"
+                                                        value={facultySearch}
+                                                        onChange={(e) => setFacultySearch(e.target.value)}
+                                                        placeholder="Search Faculty..."
+                                                        className="w-full text-xs h-8 border-none bg-surface-container-low rounded focus:ring-0 focus:outline-none placeholder:text-outline/40"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                </div>
+
+                                                <div className="overflow-y-auto flex-1">
+                                                    {filteredFaculties.length === 0 ? (
+                                                        <div className="px-5 py-3 text-xs text-outline/50 text-center font-medium">No faculties found</div>
+                                                    ) : (
+                                                        filteredFaculties.map((f) => (
+                                                            <button
+                                                                key={f.id}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    handleChangeCustom('faculty', f.name);
+                                                                    setOpenDropdown(null);
+                                                                }}
+                                                                className={`w-full px-5 py-2.5 text-left text-xs font-medium transition-all flex items-center justify-between hover:bg-surface-container-low ${formData.faculty === f.name
+                                                                        ? 'text-primary bg-primary-container/10 font-bold'
+                                                                        : 'text-on-surface'
+                                                                    }`}
+                                                            >
+                                                                <span className="truncate pr-4">{f.name}</span>
+                                                                {formData.faculty === f.name && (
+                                                                    <Check className="w-3.5 h-3.5 text-secondary shrink-0" />
+                                                                )}
+                                                            </button>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Department — only enabled when faculty is selected */}
-                                <div className="text-left">
-                                    <label className={labelClass} htmlFor="department">Department</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                            <Bookmark className="text-outline w-5 h-5 opacity-55" />
-                                        </div>
-                                        <select
-                                            className={inputClass + ' appearance-none pr-10 disabled:opacity-50'}
-                                            id="department" name="department"
-                                            required
-                                            value={formData.department}
-                                            onChange={handleChange}
+                                {/* Custom Cascading Department Selector Dropdown */}
+                                <div className="text-left relative">
+                                    <label className={labelClass}>Department</label>
+                                    <div className="relative z-50">
+                                        <button
+                                            type="button"
                                             disabled={!formData.faculty}
+                                            onClick={() => {
+                                                setOpenDropdown(openDropdown === 'department' ? null : 'department');
+                                                setDeptSearch('');
+                                            }}
+                                            className={`${inputClass} flex items-center justify-between text-left disabled:opacity-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-secondary/50`}
                                         >
-                                            <option value="">{formData.faculty ? '-- Select Department --' : '-- Choose faculty first --'}</option>
-                                            {departments.map((dep) => (
-                                                <option key={dep} value={dep}>{dep}</option>
-                                            ))}
-                                        </select>
-                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                                            <ChevronDown className="text-outline w-4 h-4 opacity-55" />
-                                        </div>
+                                            <span className={`truncate mr-4 ${formData.department ? "text-on-surface font-medium" : "text-outline/50"}`}>
+                                                {formData.faculty
+                                                    ? (formData.department || "-- Select Department --")
+                                                    : "-- Choose Faculty First --"
+                                                }
+                                            </span>
+                                            <ChevronDown className={`text-outline w-4 h-4 opacity-55 shrink-0 transition-transform duration-200 ${openDropdown === 'department' ? 'rotate-180' : ''}`} />
+                                            <Bookmark className="text-outline w-5 h-5 opacity-55 absolute left-4 pointer-events-none" />
+                                        </button>
+
+                                        {formData.faculty && openDropdown === 'department' && (
+                                            <div className="absolute left-0 right-0 mt-1 bg-white border border-surface-container-high rounded-lg shadow-xl py-2 max-h-64 flex flex-col z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                                                {/* Search header inside dropdown */}
+                                                <div className="px-3 pb-2 border-b border-surface-container mb-1 shrink-0 flex items-center gap-2">
+                                                    <Search className="w-3.5 h-3.5 text-outline/55" />
+                                                    <input
+                                                        type="text"
+                                                        value={deptSearch}
+                                                        onChange={(e) => setDeptSearch(e.target.value)}
+                                                        placeholder="Search Department..."
+                                                        className="w-full text-xs h-8 border-none bg-surface-container-low rounded focus:ring-0 focus:outline-none placeholder:text-outline/40"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    />
+                                                </div>
+
+                                                <div className="overflow-y-auto flex-1">
+                                                    {filteredDepartments.length === 0 ? (
+                                                        <div className="px-5 py-3 text-xs text-outline/50 text-center font-medium">No departments found</div>
+                                                    ) : (
+                                                        filteredDepartments.map((dep) => (
+                                                            <button
+                                                                key={dep}
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    handleChangeCustom('department', dep);
+                                                                    setOpenDropdown(null);
+                                                                }}
+                                                                className={`w-full px-5 py-2.5 text-left text-xs font-medium transition-all flex items-center justify-between hover:bg-surface-container-low ${formData.department === dep
+                                                                        ? 'text-primary bg-primary-container/10 font-bold'
+                                                                        : 'text-on-surface'
+                                                                    }`}
+                                                            >
+                                                                <span className="truncate pr-4">{dep}</span>
+                                                                {formData.department === dep && (
+                                                                    <Check className="w-3.5 h-3.5 text-secondary shrink-0" />
+                                                                )}
+                                                            </button>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Academic Level */}
-                                <div className="text-left">
-                                    <label className={labelClass} htmlFor="level">Academic Level</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                            <Award className="text-outline w-5 h-5 opacity-55" />
-                                        </div>
-                                        <select className={inputClass + ' appearance-none pr-10'} id="level" name="level" value={formData.level} onChange={handleChange}>
-                                            <option value="100">100 Level</option>
-                                            <option value="200">200 Level</option>
-                                            <option value="300">300 Level</option>
-                                            <option value="400">400 Level</option>
-                                            <option value="500">500 Level</option>
-                                        </select>
-                                        <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none">
-                                            <ChevronDown className="text-outline w-4 h-4 opacity-55" />
-                                        </div>
+                                {/* Custom Level Selector Dropdown */}
+                                <div className="text-left relative">
+                                    <label className={labelClass}>Academic Level</label>
+                                    <div className="relative z-50">
+                                        <button
+                                            type="button"
+                                            onClick={() => setOpenDropdown(openDropdown === 'level' ? null : 'level')}
+                                            className={`${inputClass} flex items-center justify-between text-left focus:ring-2 focus:ring-secondary/50`}
+                                        >
+                                            <span className="text-on-surface font-medium">
+                                                {formData.level} Level
+                                            </span>
+                                            <ChevronDown className={`text-outline w-4 h-4 opacity-55 shrink-0 transition-transform duration-200 ${openDropdown === 'level' ? 'rotate-180' : ''}`} />
+                                            <Award className="text-outline w-5 h-5 opacity-55 absolute left-4 pointer-events-none" />
+                                        </button>
+
+                                        {openDropdown === 'level' && (
+                                            <div className="absolute left-0 right-0 mt-1 bg-white border border-surface-container-high rounded-lg shadow-xl py-1 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                                                {['100', '200', '300', '400', '500'].map((lvl) => (
+                                                    <button
+                                                        key={lvl}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleChangeCustom('level', lvl);
+                                                            setOpenDropdown(null);
+                                                        }}
+                                                        className={`w-full px-5 py-2.5 text-left text-xs font-medium transition-all flex items-center justify-between hover:bg-surface-container-low ${formData.level === lvl
+                                                                ? 'text-primary bg-primary-container/10 font-bold'
+                                                                : 'text-on-surface'
+                                                            }`}
+                                                    >
+                                                        <span>{lvl} Level</span>
+                                                        {formData.level === lvl && (
+                                                            <Check className="w-3.5 h-3.5 text-secondary shrink-0" />
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </>
                         )}
 
-                        {/* Remember + Forgot — login only */}
-                        {!isRegister && (
-                            <div className="flex items-center justify-between text-xs font-semibold tracking-wider pt-1">
-                                <label className="flex items-center gap-2 cursor-pointer text-on-surface-variant hover:text-primary transition-colors">
-                                    <input className="w-4 h-4 border-outline bg-surface-container text-primary rounded-none focus:ring-0" type="checkbox" />
-                                    <span>Remember Identity</span>
-                                </label>
-                                <a className="text-secondary font-bold hover:opacity-80 transition-opacity" href="#">Forgot Key?</a>
-                            </div>
-                        )}
-
-                        {/* Submit */}
+                        {/* Gateway access button */}
                         <div className="pt-4">
                             <button
                                 className="w-full h-14 bg-primary text-white font-title-md text-title-md rounded-lg diffuse-shadow hover:bg-neutral-800 active:scale-[0.98] transition-all duration-200 uppercase tracking-widest text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
@@ -460,13 +601,13 @@ const Login = () => {
                     </form>
 
                     <footer className="mt-10 pt-8 border-t border-surface-container-high text-center">
-                        <p className="font-body-md text-body-md text-on-surface-variant mb-4">
+                        <p className="font-body-md text-body-md text-on-surface-variant mb-4 font-semibold text-xs tracking-wide uppercase">
                             {isRegister ? 'Already registered within the ecosystem?' : 'New to the ecosystem?'}
                         </p>
                         <button
                             type="button"
-                            onClick={() => { setIsRegister(!isRegister); setErrorMsg(''); setFormData({ name: '', email: '', password: '', confirmPassword: '', matricNumber: '', faculty: '', department: '', level: '100' }); setEmailState({ valid: false, msg: '' }); setPwdRules(validatePassword('')); setConfirmMsg(''); }}
-                            className="w-full py-3 bg-surface-container text-primary font-title-md text-title-md rounded-lg hover:bg-surface-container-high transition-colors font-bold text-sm tracking-wider uppercase"
+                            onClick={handleToggleForm}
+                            className="w-full py-3 bg-surface-container text-primary font-title-md text-title-md rounded-lg hover:bg-surface-container-high transition-colors font-bold text-sm tracking-wider uppercase border border-neutral-100"
                         >
                             {isRegister ? 'Sign In Student Account' : 'Register Student Account'}
                         </button>

@@ -562,7 +562,7 @@ const Login = () => {
                                                 {formData.faculty || "-- Select Faculty --"}
                                             </span>
                                             <ChevronDown className={`text-outline w-4 h-4 opacity-55 shrink-0 transition-transform duration-200 ${openDropdown === 'faculty' ? 'rotate-180' : ''}`} />
-                                            <GraduationCap className="text-outline w-5 h-5 opacity-55 absolute left-4 pointer-events-none" />
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="text-outline w-5 h-5 opacity-55 absolute left-4 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
                                         </button>
 
                                         {openDropdown === 'faculty' && (

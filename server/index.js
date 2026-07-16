@@ -40,6 +40,16 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Middleware to guarantee database connection in Serverless environments (like Vercel)
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    next();
+  }
+});
+
 // Global Middleware Matrix
 app.use(cors());
 app.use(express.json()); // Allows the server to parse JSON payloads in request bodies

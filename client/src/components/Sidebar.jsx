@@ -30,8 +30,8 @@ const Sidebar = ({ isCollapsed }) => {
             {/* Brand Header */}
             <div className={`py-8 transition-all duration-300 ${isCollapsed ? 'px-3' : 'px-6'}`}>
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-                        <GraduationCap className="w-6 h-6 text-white" />
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
+                        <img src="/logo.svg" alt="UniHub OGB Logo" className="w-8 h-8 object-contain" />
                     </div>
                     {!isCollapsed && (
                         <div className="transition-opacity duration-300">
@@ -52,8 +52,8 @@ const Sidebar = ({ isCollapsed }) => {
                                 <Link
                                     to={path}
                                     className={`flex items-center transition-all duration-200 text-sm ${isCollapsed
-                                            ? 'justify-center py-4 px-0 hover:bg-white/5'
-                                            : 'gap-3 py-3 pr-4 pl-[19px] hover:bg-white/5 hover:translate-x-1'
+                                        ? 'justify-center py-4 px-0 hover:bg-white/5'
+                                        : 'gap-3 py-3 pr-4 pl-[19px] hover:bg-white/5 hover:translate-x-1'
                                         } ${isActive
                                             ? 'text-white font-semibold bg-white/10' + (isCollapsed ? ' border-l-[3px] border-secondary' : ' border-l-[3px] border-secondary pl-[16px]')
                                             : 'text-white/70 font-normal hover:text-white'

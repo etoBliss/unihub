@@ -20,7 +20,7 @@ const LandingPage = () => {
             {/* Header Navigation */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-surface-container-high transition-all h-16 md:h-20 px-6 md:px-10 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Globe className="w-6 h-6 text-primary" />
+                    <img src="/logo.svg" alt="UniHub OGB Logo" className="w-8 h-8 object-contain" />
                     <span className="font-headline-lg text-headline-lg tracking-tight text-primary font-bold">UniHub</span>
                 </div>
                 <div className="hidden md:flex gap-10 items-center justify-end">
@@ -255,7 +255,10 @@ const LandingPage = () => {
             <footer className="bg-white border-t border-surface-container-high py-20 px-6 md:px-10">
                 <div className="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between gap-16">
                     <div className="space-y-6 max-w-sm text-left">
-                        <h2 className="font-headline-lg text-headline-lg text-primary font-bold">UniHub OGB</h2>
+                        <div className="flex items-center gap-3">
+                            <img src="/logo.svg" alt="UniHub OGB Logo" className="w-10 h-10 object-contain" />
+                            <h2 className="font-headline-lg text-headline-lg text-primary font-bold">UniHub OGB</h2>
+                        </div>
                         <p className="font-body-md text-body-md text-on-surface-variant leading-relaxed">
                             The official digital ecosystem for Ladoke Akintola University of Technology. Streamlining communication, resources, and collaboration for the next generation of excellence.
                         </p>

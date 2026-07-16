@@ -2,8 +2,8 @@ import React, { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext, api } from '../context/AuthContext';
 import {
-    School, Mail, Lock, User, BadgeCheck, Bookmark, Award, HelpCircle,
-    Eye, EyeOff, ChevronDown, GraduationCap, Search, Check
+    Mail, Lock, User, BadgeCheck, Bookmark, Award, HelpCircle,
+    Eye, EyeOff, ChevronDown, Search, Check
 } from 'lucide-react';
 
 // ─── Password strength rules ───────────────────────────────────────────────
@@ -378,9 +378,7 @@ const Login = () => {
                 </div>
                 <div className="relative z-10 w-full max-w-lg text-left">
                     <div className="mb-12 flex items-center gap-4">
-                        <div className="w-16 h-16 bg-secondary flex items-center justify-center rounded-lg diffuse-shadow">
-                            <School className="w-10 h-10 text-white" />
-                        </div>
+                        <img src="/logo.svg" alt="UniHub OGB Logo" className="w-16 h-16 object-contain diffuse-shadow" />
                         <div>
                             <h2 className="font-headline-lg text-headline-lg text-white tracking-tight font-bold">UniHub OGB</h2>
                             <p className="font-label-md text-label-md text-secondary uppercase tracking-[0.2em] font-semibold">LAUTECH Ecosystem</p>

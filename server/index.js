@@ -1,7 +1,28 @@
 import 'dotenv/config';
 import dns from 'dns';
-// Force Node to use Google and Cloudflare DNS to bypass Windows/ISP SRV resolving failures (querySrv ESERVFAIL)
+
+// Force Node to use Google and Cloudflare DNS to bypass local/ISP resolver bugs (ESERVFAIL)
 dns.setServers(['8.8.8.8', '1.1.1.1']);
+
+// Patched dns.lookup: Forces TCP connections (via net.connect) targeting MongoDB Atlas
+// to utilize Node's configured DNS servers rather than OS-level getaddrinfo threads (which throw EAI_AGAIN)
+const originalLookup = dns.lookup;
+dns.lookup = function(hostname, options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = {};
+  }
+  if (hostname.includes('mongodb.net')) {
+    dns.resolve4(hostname, (err, addresses) => {
+      if (!err && addresses && addresses.length > 0) {
+        return callback(null, addresses[0], 4);
+      }
+      originalLookup(hostname, options, callback);
+    });
+  } else {
+    originalLookup(hostname, options, callback);
+  }
+};
 
 import express from 'express';
 import cors from 'cors';

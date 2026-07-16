@@ -1,4 +1,8 @@
 import 'dotenv/config';
+import dns from 'dns';
+// Force Node to use Google and Cloudflare DNS to bypass Windows/ISP SRV resolving failures (querySrv ESERVFAIL)
+dns.setServers(['8.8.8.8', '1.1.1.1']);
+
 import express from 'express';
 import cors from 'cors';
 import connectDB from './config/db.js';

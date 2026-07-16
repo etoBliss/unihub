@@ -2,11 +2,17 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/unihub_ogb');
+    // Fail-fast immediately if connection is down rather than buffering queries indefinitely
+    mongoose.set('bufferCommands', false);
+
+    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/unihub_ogb', {
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000,
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`);
-    process.exit(1);
+    console.warn(`WARNING: Server will continue running in offline/disconnected database mode.`);
   }
 };
 

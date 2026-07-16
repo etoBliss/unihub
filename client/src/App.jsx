@@ -7,6 +7,8 @@ import MainLayout from './layouts/MainLayout';
 // Pages
 import LandingPage from './pages/LandingPage';
 import Login from './pages/Login';
+import VerifyPending from './pages/VerifyPending';
+import VerifyEmail from './pages/VerifyEmail';
 import Dashboard from './pages/Dashboard';
 import Announcements from './pages/Announcements';
 import Repository from './pages/Repository';
@@ -21,8 +23,10 @@ function App() {
           {/* Public Landing Page */}
           <Route path="/" element={<LandingPage />} />
 
-          {/* Public Authentication page */}
+          {/* Public Authentication pages */}
           <Route path="/login" element={<Login />} />
+          <Route path="/verify-pending" element={<VerifyPending />} />
+          <Route path="/verify/:token" element={<VerifyEmail />} />
 
           {/* Secure App layouts */}
           <Route

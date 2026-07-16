@@ -24,6 +24,91 @@ const validateEmail = (email) => {
     return { valid: true, msg: '✓ Valid student email' };
 };
 
+// Static LAUTECH Faculties and matching Departments fallback
+const STATIC_FACULTIES = [
+    {
+        id: 'fet',
+        name: 'Faculty of Engineering and Technology',
+        departments: [
+            'Agricultural Engineering',
+            'Chemical Engineering',
+            'Civil Engineering',
+            'Computer Science and Engineering',
+            'Electrical and Electronic Engineering',
+            'Food Engineering',
+            'Materials and Metallurgical Engineering',
+            'Mechanical Engineering',
+        ],
+    },
+    {
+        id: 'faps',
+        name: 'Faculty of Agricultural Sciences',
+        departments: [
+            'Agricultural Economics and Extension',
+            'Agronomy',
+            'Animal Production and Health',
+            'Aquaculture and Fisheries Management',
+            'Crop Protection',
+            'Soil Science and Land Management',
+        ],
+    },
+    {
+        id: 'fpas',
+        name: 'Faculty of Pure and Applied Sciences',
+        departments: [
+            'Biochemistry',
+            'Chemistry',
+            'Industrial Chemistry',
+            'Mathematics',
+            'Microbiology',
+            'Physics',
+            'Statistics',
+        ],
+    },
+    {
+        id: 'fems',
+        name: 'Faculty of Environmental Sciences',
+        departments: [
+            'Architecture',
+            'Building Technology',
+            'Estate Management and Valuation',
+            'Quantity Surveying',
+            'Urban and Regional Planning',
+        ],
+    },
+    {
+        id: 'fms',
+        name: 'Faculty of Management Sciences',
+        departments: [
+            'Accounting',
+            'Business Administration',
+            'Economics',
+            'Finance',
+            'Public Administration',
+        ],
+    },
+    {
+        id: 'fcoms',
+        name: 'Faculty of Computing and Informatics',
+        departments: [
+            'Computer Science',
+            'Information and Communication Technology',
+            'Library and Information Science',
+        ],
+    },
+    {
+        id: 'fms2',
+        name: 'Faculty of Medical Sciences',
+        departments: [
+            'Anatomy',
+            'Community Medicine',
+            'Medicine and Surgery',
+            'Nursing Science',
+            'Physiotherapy',
+        ],
+    },
+];
+
 // ─── Component ─────────────────────────────────────────────────────────────
 const Login = () => {
     const { user, loginUser, registerUser } = useContext(AuthContext);
@@ -57,23 +142,76 @@ const Login = () => {
     const [facultySearch, setFacultySearch] = useState('');
     const [deptSearch, setDeptSearch] = useState('');
 
-    // Faculty & department lists fetched from server
-    const [faculties, setFaculties] = useState([]);
+    // Faculty & department lists fetched from server, initialize with static list
+    const [faculties, setFaculties] = useState(STATIC_FACULTIES);
     const [departments, setDepartments] = useState([]);
+    const [isFetchedFromApi, setIsFetchedFromApi] = useState(false);
 
     const cardRef = useRef(null);
+    const facultyRef = useRef(null);
+    const deptRef = useRef(null);
+    const levelRef = useRef(null);
+
+    // Auto-dismiss open dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (!openDropdown) return;
+
+            if (openDropdown === 'faculty' && facultyRef.current && !facultyRef.current.contains(event.target)) {
+                setOpenDropdown(null);
+            }
+            if (openDropdown === 'department' && deptRef.current && !deptRef.current.contains(event.target)) {
+                setOpenDropdown(null);
+            }
+            if (openDropdown === 'level' && levelRef.current && !levelRef.current.contains(event.target)) {
+                setOpenDropdown(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [openDropdown]);
 
     // Redirect user if logged in already
     useEffect(() => {
         if (user) navigate('/portal');
     }, [user, navigate]);
 
-    // Retrieve faculties on component mounting
+    // Retrieve faculties on component mounting with fallback
     useEffect(() => {
         api.get('/faculties')
-            .then((res) => setFaculties(res.data))
-            .catch((err) => console.error('Failed to load faculties:', err.message));
+            .then((res) => {
+                if (res.data && res.data.length > 0) {
+                    setFaculties(res.data);
+                    setIsFetchedFromApi(true);
+                }
+            })
+            .catch((err) => {
+                console.warn('Faculties API call failed, using static fallback:', err.message);
+                setIsFetchedFromApi(false);
+            });
     }, []);
+
+    // Sync departments whenever faculty selection changes
+    useEffect(() => {
+        if (formData.faculty && faculties.length > 0) {
+            const chosen = faculties.find((f) => f.name === formData.faculty);
+            setDepartments(chosen ? chosen.departments : []);
+        } else {
+            setDepartments([]);
+        }
+    }, [formData.faculty, faculties]);
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -155,10 +293,23 @@ const Login = () => {
                 formData.department,
                 formData.level
             );
-            if (!res.success) setErrorMsg(res.message);
+            if (res.success) {
+                // Don't log user in — send to "check your inbox" page
+                navigate('/verify-pending', { state: { email: formData.email } });
+            } else {
+                setErrorMsg(res.message);
+            }
         } else {
             const res = await loginUser(formData.email, formData.password);
-            if (!res.success) setErrorMsg(res.message);
+            if (!res.success) {
+                if (res.unverified) {
+                    setErrorMsg(
+                        res.message + ' — Use the link below to resend the verification email.'
+                    );
+                } else {
+                    setErrorMsg(res.message);
+                }
+            }
         }
         setIsLoading(false);
     };
@@ -185,13 +336,13 @@ const Login = () => {
         setConfirmMsg('');
     };
 
-    // Filtered lists for selectable options
-    const filteredFaculties = faculties.filter((f) =>
-        f.name.toLowerCase().includes(facultySearch.toLowerCase())
+    // Filtered lists for selectable options safely
+    const filteredFaculties = (faculties || []).filter((f) =>
+        f && f.name && f.name.toLowerCase().includes(facultySearch.toLowerCase())
     );
 
-    const filteredDepartments = departments.filter((d) =>
-        d.toLowerCase().includes(deptSearch.toLowerCase())
+    const filteredDepartments = (departments || []).filter((d) =>
+        d && d.toLowerCase().includes(deptSearch.toLowerCase())
     );
 
     // Subtle 3D tilt effect on the signup/login card container
@@ -220,14 +371,6 @@ const Login = () => {
 
     return (
         <main className="min-h-screen w-full flex flex-col md:flex-row bg-[#f2f2f2] text-on-surface relative">
-            {/* Backdrop click overlay to auto-collapse search lists */}
-            {openDropdown && (
-                <div
-                    className="fixed inset-0 z-40 cursor-default"
-                    onClick={() => setOpenDropdown(null)}
-                />
-            )}
-
             {/* Left Panel: Brand identity */}
             <section className="w-full md:w-1/2 bg-primary-container flex flex-col justify-center items-start px-12 md:px-24 py-16 text-white relative overflow-hidden">
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
@@ -408,7 +551,7 @@ const Login = () => {
                                 {/* Custom Faculty Selector Dropdown */}
                                 <div className="text-left relative">
                                     <label className={labelClass}>Faculty</label>
-                                    <div className="relative z-50">
+                                    <div ref={facultyRef} className={`relative ${openDropdown === 'faculty' ? 'z-50' : 'z-25'}`}>
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -433,6 +576,7 @@ const Login = () => {
                                                         type="text"
                                                         value={facultySearch}
                                                         onChange={(e) => setFacultySearch(e.target.value)}
+                                                        onKeyDown={handleSearchKeyDown}
                                                         placeholder="Search Faculty..."
                                                         className="w-full text-xs h-8 border-none bg-surface-container-low rounded focus:ring-0 focus:outline-none placeholder:text-outline/40"
                                                         onClick={(e) => e.stopPropagation()}
@@ -452,8 +596,8 @@ const Login = () => {
                                                                     setOpenDropdown(null);
                                                                 }}
                                                                 className={`w-full px-5 py-2.5 text-left text-xs font-medium transition-all flex items-center justify-between hover:bg-surface-container-low ${formData.faculty === f.name
-                                                                        ? 'text-primary bg-primary-container/10 font-bold'
-                                                                        : 'text-on-surface'
+                                                                    ? 'text-primary bg-primary-container/10 font-bold'
+                                                                    : 'text-on-surface'
                                                                     }`}
                                                             >
                                                                 <span className="truncate pr-4">{f.name}</span>
@@ -464,6 +608,12 @@ const Login = () => {
                                                         ))
                                                     )}
                                                 </div>
+
+                                                {/* API Status Banner */}
+                                                <div className="px-4 py-1.5 border-t border-surface-container mt-1 shrink-0 text-[10px] text-outline/50 flex items-center justify-between font-mono bg-surface-container-low/20">
+                                                    <span>SOURCE: {isFetchedFromApi ? 'LAUTECH DIRECTORY API' : 'LOCAL CACHED DIRECTORY'}</span>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${isFetchedFromApi ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -472,7 +622,7 @@ const Login = () => {
                                 {/* Custom Cascading Department Selector Dropdown */}
                                 <div className="text-left relative">
                                     <label className={labelClass}>Department</label>
-                                    <div className="relative z-50">
+                                    <div ref={deptRef} className={`relative ${openDropdown === 'department' ? 'z-50' : 'z-20'}`}>
                                         <button
                                             type="button"
                                             disabled={!formData.faculty}
@@ -501,6 +651,7 @@ const Login = () => {
                                                         type="text"
                                                         value={deptSearch}
                                                         onChange={(e) => setDeptSearch(e.target.value)}
+                                                        onKeyDown={handleSearchKeyDown}
                                                         placeholder="Search Department..."
                                                         className="w-full text-xs h-8 border-none bg-surface-container-low rounded focus:ring-0 focus:outline-none placeholder:text-outline/40"
                                                         onClick={(e) => e.stopPropagation()}
@@ -520,8 +671,8 @@ const Login = () => {
                                                                     setOpenDropdown(null);
                                                                 }}
                                                                 className={`w-full px-5 py-2.5 text-left text-xs font-medium transition-all flex items-center justify-between hover:bg-surface-container-low ${formData.department === dep
-                                                                        ? 'text-primary bg-primary-container/10 font-bold'
-                                                                        : 'text-on-surface'
+                                                                    ? 'text-primary bg-primary-container/10 font-bold'
+                                                                    : 'text-on-surface'
                                                                     }`}
                                                             >
                                                                 <span className="truncate pr-4">{dep}</span>
@@ -540,7 +691,7 @@ const Login = () => {
                                 {/* Custom Level Selector Dropdown */}
                                 <div className="text-left relative">
                                     <label className={labelClass}>Academic Level</label>
-                                    <div className="relative z-50">
+                                    <div ref={levelRef} className={`relative ${openDropdown === 'level' ? 'z-50' : 'z-10'}`}>
                                         <button
                                             type="button"
                                             onClick={() => setOpenDropdown(openDropdown === 'level' ? null : 'level')}
@@ -564,8 +715,8 @@ const Login = () => {
                                                             setOpenDropdown(null);
                                                         }}
                                                         className={`w-full px-5 py-2.5 text-left text-xs font-medium transition-all flex items-center justify-between hover:bg-surface-container-low ${formData.level === lvl
-                                                                ? 'text-primary bg-primary-container/10 font-bold'
-                                                                : 'text-on-surface'
+                                                            ? 'text-primary bg-primary-container/10 font-bold'
+                                                            : 'text-on-surface'
                                                             }`}
                                                     >
                                                         <span>{lvl} Level</span>

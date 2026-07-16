@@ -17,9 +17,7 @@ api.interceptors.request.use(
         }
         return config;
     },
-    (error) => {
-        return Promise.reject(error);
-    }
+    (error) => Promise.reject(error)
 );
 
 export const AuthProvider = ({ children }) => {
@@ -45,6 +43,7 @@ export const AuthProvider = ({ children }) => {
         bootstrapAuth();
     }, []);
 
+    // ── Login ──────────────────────────────────────────────────────────────
     const loginUser = async (email, password) => {
         try {
             const res = await api.post('/auth/login', { email, password });
@@ -59,30 +58,72 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             return {
                 success: false,
-                message: error.response?.data?.message || 'Authentication failed'
+                unverified: error.response?.data?.unverified || false,
+                message:
+                    error.response?.data?.message ||
+                    (error.code === 'ECONNREFUSED'
+                        ? 'Cannot reach the server. Make sure the backend is running on port 5000.'
+                        : 'Authentication failed'),
             };
         }
     };
 
+    // ── Register ───────────────────────────────────────────────────────────
+    // On success the backend does NOT return a session token anymore —
+    // it returns { pending: true, message } and waits for email verification.
     const registerUser = async (name, email, password, matricNumber, faculty, department, level) => {
         try {
-            const res = await api.post('/auth/register', { name, email, password, matricNumber, faculty, department, level });
-            const { token, ...userData } = res.data;
-
-            localStorage.setItem('unihub_token', token);
-            localStorage.setItem('unihub_user', JSON.stringify(userData));
-
-            setToken(token);
-            setUser(userData);
-            return { success: true };
+            const res = await api.post('/auth/register', {
+                name, email, password, matricNumber, faculty, department, level,
+            });
+            return { success: true, pending: res.data.pending, message: res.data.message };
         } catch (error) {
             return {
                 success: false,
-                message: error.response?.data?.message || 'Registration failed'
+                message:
+                    error.response?.data?.message ||
+                    (error.code === 'ECONNREFUSED'
+                        ? 'Cannot reach the server. Make sure the backend is running on port 5000.'
+                        : 'Registration failed. Please try again.'),
             };
         }
     };
 
+    // ── Verify Email ───────────────────────────────────────────────────────
+    const verifyEmailToken = async (token) => {
+        try {
+            const res = await api.get(`/auth/verify/${token}`);
+            // If verification succeeds, automatically log the user in
+            if (res.data.token) {
+                localStorage.setItem('unihub_token', res.data.token);
+                const { token: jwt, ...userData } = res.data;
+                localStorage.setItem('unihub_user', JSON.stringify(userData));
+                setToken(jwt);
+                setUser(userData);
+            }
+            return { success: true, message: res.data.message };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.response?.data?.message || 'Verification failed. The link may have expired.',
+            };
+        }
+    };
+
+    // ── Resend Verification ────────────────────────────────────────────────
+    const resendVerificationEmail = async (email) => {
+        try {
+            const res = await api.post('/auth/resend-verification', { email });
+            return { success: true, message: res.data.message };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.response?.data?.message || 'Could not resend verification email.',
+            };
+        }
+    };
+
+    // ── Logout ─────────────────────────────────────────────────────────────
     const logoutUser = () => {
         localStorage.removeItem('unihub_token');
         localStorage.removeItem('unihub_user');
@@ -91,7 +132,14 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, loading, loginUser, registerUser, logoutUser }}>
+        <AuthContext.Provider
+            value={{
+                user, token, loading,
+                loginUser, registerUser,
+                verifyEmailToken, resendVerificationEmail,
+                logoutUser,
+            }}
+        >
             {children}
         </AuthContext.Provider>
     );

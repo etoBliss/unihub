@@ -1,6 +1,6 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import announcementRoutes from './routes/announcementRoutes.js';
@@ -8,8 +8,6 @@ import resourceRoutes from './routes/resourceRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 import facultyRoutes from './routes/facultyRoutes.js';
 
-// Initialize environment variables
-dotenv.config();
 
 // Connect to Database
 connectDB();

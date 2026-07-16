@@ -50,6 +50,18 @@ const UserSchema = new mongoose.Schema({
     default: 'student',
     enum: ['student'], // Restricted exclusively to student
   },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: {
+    type: String,
+    default: null,
+  },
+  verificationTokenExpiry: {
+    type: Date,
+    default: null,
+  },
 }, { timestamps: true });
 
 // Pre-save hook to hash password (Mongoose v9 compatible — no `next` in async hooks)

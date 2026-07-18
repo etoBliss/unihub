@@ -16,7 +16,12 @@ export const sendVerificationEmail = async (toEmail, name, token) => {
     },
   });
 
-  const verifyURL = `${process.env.CLIENT_URL}/verify/${token}`;
+  // Resolve frontend base URL: use custom domain in production, local fallback in development
+  const clientBase = (process.env.NODE_ENV === 'production' || process.env.VERCEL)
+    ? 'https://unihubogb.name.ng'
+    : (process.env.CLIENT_URL || 'http://localhost:5173');
+
+  const verifyURL = `${clientBase.replace(/\/$/, '')}/verify/${token}`;
 
   const html = `
 <!DOCTYPE html>

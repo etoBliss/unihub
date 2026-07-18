@@ -30,78 +30,205 @@ export const sendVerificationEmail = async (toEmail, name, token) => {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Verify your UniHub OGB account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    table {
+      border-spacing: 0;
+      width: 100%;
+    }
+    td {
+      padding: 0;
+    }
+    a {
+      text-decoration: none;
+    }
+    .wrapper {
+      background-color: #f9f9f9;
+      padding: 40px 16px;
+    }
+    .container {
+      max-width: 560px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border: 1px solid #e8e8e8;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(22, 24, 27, 0.03);
+    }
+    .header {
+      background-color: #16181b;
+      padding: 32px 40px;
+      text-align: left;
+    }
+    .logo-mark {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      line-height: 32px;
+      background: linear-gradient(135deg, #745a23, #ffdb98);
+      border-radius: 8px;
+      color: #16181b;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      font-size: 18px;
+      text-align: center;
+      vertical-align: middle;
+      margin-right: 12px;
+    }
+    .brand-title {
+      display: inline-block;
+      font-family: 'Poppins', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      vertical-align: middle;
+      letter-spacing: -0.5px;
+    }
+    .brand-sub {
+      margin-top: 4px;
+      font-size: 10px;
+      color: #ffdb98;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .content-body {
+      padding: 40px;
+    }
+    .greeting {
+      font-family: 'Poppins', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #16181b;
+      margin: 0 0 16px 0;
+    }
+    .text {
+      font-size: 15px;
+      color: #46464b;
+      line-height: 1.6;
+      margin: 0 0 24px 0;
+    }
+    .highlight-card {
+      background-color: #f3f3f3;
+      border-left: 4px solid #745a23;
+      border-radius: 8px;
+      padding: 18px 24px;
+      margin-bottom: 28px;
+    }
+    .highlight-title {
+      font-weight: 500;
+      font-size: 14px;
+      color: #16181b;
+      margin: 0 0 4px 0;
+    }
+    .highlight-desc {
+      font-size: 13px;
+      color: #46464b;
+      margin: 0;
+    }
+    .btn-container {
+      margin-bottom: 32px;
+    }
+    .btn {
+      display: inline-block;
+      background-color: #16181b;
+      color: #ffffff !important;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 16px 36px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(22, 24, 27, 0.15);
+      transition: background-color 0.2s ease;
+    }
+    .footer {
+      background-color: #ffffff;
+      border-top: 1px solid #eeeeee;
+      padding: 24px 40px;
+      text-align: center;
+    }
+    .footer-text {
+      font-size: 12px;
+      color: #76777b;
+      margin: 0 0 8px 0;
+    }
+    .footer-subtext {
+      font-size: 11px;
+      color: #c7c6cb;
+      margin: 0;
+    }
+    .fallback-url {
+      font-size: 11px;
+      color: #76777b;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+  </style>
 </head>
-<body style="margin:0;padding:0;background:#f2f2f2;font-family:'Segoe UI',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f2;padding:40px 0;">
-    <tr>
-      <td align="center">
-        <table width="560" cellpadding="0" cellspacing="0"
-               style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.08);">
-
-          <!-- Header -->
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <table>
           <tr>
-            <td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);padding:36px 48px;">
-              <p style="margin:0;font-size:22px;font-weight:700;color:#c9a84c;letter-spacing:1px;">
-                UniHub <span style="color:#ffffff;">OGB</span>
-              </p>
-              <p style="margin:6px 0 0;font-size:12px;color:rgba(255,255,255,.55);letter-spacing:2px;text-transform:uppercase;">
-                Ladoke Akintola University of Technology
-              </p>
+            <td>
+              <span class="logo-mark">U</span>
+              <span class="brand-title">UniHub OGB</span>
+              <div class="brand-sub">LAUTECH Ecosystem Hub</div>
             </td>
           </tr>
-
-          <!-- Body -->
-          <tr>
-            <td style="padding:40px 48px 32px;">
-              <h1 style="margin:0 0 8px;font-size:24px;color:#1a1a2e;font-weight:700;">
-                Verify your email address
-              </h1>
-              <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.6;">
-                Hi <strong>${name}</strong>, welcome to UniHub OGB — the unified digital core of LAUTECH.
-                <br/>Please confirm your student email address to activate your account.
-              </p>
-
-              <!-- CTA button -->
-              <table cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
-                <tr>
-                  <td style="background:#c9a84c;border-radius:10px;">
-                    <a href="${verifyURL}"
-                       style="display:inline-block;padding:14px 36px;font-size:15px;font-weight:600;
-                              color:#1a1a2e;text-decoration:none;letter-spacing:.5px;">
-                      Activate My Account →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="margin:0 0 8px;font-size:13px;color:#888;line-height:1.6;">
-                This link expires in <strong>24 hours</strong>. If you did not create a UniHub OGB account,
-                you can safely ignore this email.
-              </p>
-
-              <!-- Fallback URL -->
-              <p style="margin:24px 0 0;font-size:12px;color:#aaa;">
-                If the button doesn't work, copy and paste this URL into your browser:
-              </p>
-              <p style="margin:4px 0 0;font-size:12px;word-break:break-all;">
-                <a href="${verifyURL}" style="color:#0f3460;">${verifyURL}</a>
-              </p>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="background:#f8f8f8;border-top:1px solid #ececec;padding:20px 48px;text-align:center;">
-              <p style="margin:0;font-size:11px;color:#bbb;">
-                © ${new Date().getFullYear()} UniHub OGB · LAUTECH Digital Infrastructure
-              </p>
-            </td>
-          </tr>
-
         </table>
-      </td>
-    </tr>
-  </table>
+      </div>
+
+      <!-- Main Body -->
+      <div class="content-body">
+        <h1 class="greeting">Confirm Your Registration</h1>
+        <p class="text">
+          Hello <strong>${name}</strong>,<br/>
+          Thank you for signing up for UniHub OGB. To finalize your student registration and gain secure access to the ecosystem portal, please verify your email address.
+        </p>
+
+        <!-- CTA Verification Button -->
+        <div class="btn-container">
+          <a href="${verifyURL}" class="btn">Verify and Join the Hub →</a>
+        </div>
+
+        <!-- Info Card -->
+        <div class="highlight-card">
+          <h2 class="highlight-title">Security Information</h2>
+          <p class="highlight-desc">
+            This verification link is secure, matching your student token, and will expire in 24 hours.
+          </p>
+        </div>
+
+        <!-- Fallback Link -->
+        <p class="text" style="font-size: 12px; margin-bottom: 0;">
+          If the button does not open, copy and paste this verification path into your web browser:
+        </p>
+        <p class="fallback-url">
+          <a href="${verifyURL}" style="color: #745a23;">${verifyURL}</a>
+        </p>
+      </div>
+
+      <!-- Footer Info -->
+      <div class="footer">
+        <p class="footer-text">
+          © ${new Date().getFullYear()} UniHub OGB — Ladoke Akintola University of Technology.
+        </p>
+        <p class="footer-subtext">
+          This is an automated security message. Please do not reply directly to this mail.
+        </p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
   `;

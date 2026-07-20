@@ -10,11 +10,18 @@ export default function PWAInstallPrompt() {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        // Don't show if already dismissed this session
         if (sessionStorage.getItem('pwa_prompt_dismissed')) return;
+
+        // The event may have already fired before this component mounted
+        // main.jsx captures it early and stashes it on window.__pwaPrompt
+        if (window.__pwaPrompt) {
+            setDeferredPrompt(window.__pwaPrompt);
+            setVisible(true);
+        }
 
         const handler = (e) => {
             e.preventDefault();
+            window.__pwaPrompt = e;
             setDeferredPrompt(e);
             setVisible(true);
         };

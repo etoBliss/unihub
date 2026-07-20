@@ -39,10 +39,8 @@ const MainLayout = () => {
                 {/* Mobile: Top AppBar */}
                 <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md px-4 h-16 flex items-center justify-between border-b border-surface-container-high md:hidden">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
-                            <span className="material-symbols-outlined text-white" style={{ fontVariationSettings: "'FILL' 1" }}>
-                                account_balance
-                            </span>
+                        <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0">
+                            <img src="/logo.svg" alt="UniHub OGB Logo" className="w-8 h-8 object-contain" />
                         </div>
                         <div>
                             <h1 className="font-title-md text-[16px] text-primary leading-tight font-bold">UniHub OGB</h1>

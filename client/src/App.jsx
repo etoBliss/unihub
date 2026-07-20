@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './layouts/MainLayout';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -19,6 +20,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <PWAInstallPrompt />
         <Routes>
           {/* Public Landing Page */}
           <Route path="/" element={<LandingPage />} />
